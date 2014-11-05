@@ -1,83 +1,123 @@
+/*
+	Jacob Byrd - Machine Problem 5
+	Khaled Mansour - CPS 171
+	11/7/2014
+*/
 #include <iostream>
 #include <string>
 #include <iomanip>
 #include <fstream>
 using namespace std;
 
-enum errorType{CORRECT,SUB,TRANS,DEL,INS,ERR};
+enum errorType{ CORRECT, SUB, TRANS, DEL, INS, ERR };
 
+
+// Function to check where the first char of the error is,
 int checkError(string word1, string word2)
 {
 	int i = 0;
-		for (i = 0; i < word1.size(); i++)
-			if (word1[i] != word2[i])
-				break;
-	return i;
+
+	// Loops til it finds i
+	for (i = 0; i < word1.size(); i++)
+		if (word1[i] != word2[i])
+			return i;
+
+	// ONLY returns i - 1 if i is the last letter of the word (meaning it's == size of word, 
+	// 1 greater than it needs to be)
+	return i - 1;
 }
 
+// Function to check if there was a substitution (one character replaced by another)
 errorType checkSubs(string cw, string bw)
 {
 	int i = 0;
 	i = checkError(cw, bw);
-	if (cw.substr(i+1) == bw.substr(i+1))
+	// If everything after the error is the same, has to be substitution.
+	if (cw.substr(i + 1) == bw.substr(i + 1))
 		return SUB;
+
+	// Otherwise, error.
 	return ERR;
 }
 
+// Function to check if there has been a transposition (two adjacent characters swapped)
 errorType checkTrans(string cw, string bw)
 {
 	int i = 0;
-	// Set i == the position of the first char that's different.
-	i = checkError (cw,bw);
+	i = checkError(cw, bw);
 
 	// Check to see if i is == the last letter of the word.
 	if (i == cw.size() - 1)
 		return ERR;
 
 	// Check to see if i is == the second to last letter of the word.
-	if (cw[i] == bw[i+1] && cw[i+1] == bw[i] && i == cw.size() - 2)
+	else if (cw[i] == bw[i + 1] && cw[i + 1] == bw[i] && i == cw.size() - 2)
 		return TRANS;
 
-	if (cw[i] == bw[i+1]	
-		&& cw[i+1] == bw[i] 
-		&& cw.substr(i+2) == bw.substr(i+2))
-			return TRANS;
 
+	else if (cw[i] == bw[i + 1]
+		&& cw[i + 1] == bw[i]
+		&& cw.substr(i + 2) == bw.substr(i + 2))
+		return TRANS;
+
+	
 	return ERR;
-
+	
 }
 
+// Function to check if there has been a deletion (one character deleted entirely)
 errorType checkDeletion(string cw, string bw)
 {
 	int i = 0;
+	// bad word is being checked because it is shorter in length.
+	i = checkError(bw, cw);
 
-	i = checkError(bw,cw);	// bad word is first because it's shorter
-
-	if (i == bw.size())
+	// If the pointer is at the last letter of the bad word, it has to be deletion.
+	if (i == bw.size() - 1)
 		return DEL;
 
-	if (cw.substr(i+1) == bw.substr(i))
+	// if it's anywhere else and the words match otherwise, return deletion.
+	if (cw.substr(i + 1) == bw.substr(i))
 		return DEL;
 
+	// otherwise return error.
 	return ERR;
 }
 
+// Function to check if there has been a character inserted into the word.
 errorType checkInsertion(string cw, string bw)
 {
 	int i = 0;
-
 	i = checkError(cw, bw);
 
-
-
+	// If the two chars don't match up, take the substr of the rest of the word
+	// and then make sure the last letter of both words are the same
+	// if true, return INS.
 	if (cw[i] != bw[i])
-		if (cw[cw.size() + 1] == bw[bw.size()])
-			return INS;
+	{
+		if (bw.substr(i+1) == cw.substr(i))
+			if (cw[cw.size() - 1] == bw[bw.size() - 1])
+				return INS;
+	}
+	// if above isn't true, check to see if 1 + correctWord == the badWord's size
+	// AND correctWord at i and badWord at i are equal. This means an extra letter
+	// was added to the end.
+	else if (cw.size() + 1 == bw.size() && cw[i] == bw[i])
+		return INS;
 
-	//else if (cw.size() + 1 == bw.size())
-		//return INS;
-
+	// Otherwise there are too many errors.
 	return ERR;
+}
+
+// Function to display the final count to file.
+void displayResults(int sub, int trans, int del, int ins, int error, int correct, ofstream& outfile)
+{
+	outfile << "****** End of File ******" << endl;
+	outfile << "There were " << correct << " words that were correct." << endl;
+	outfile << "There were " << trans << " words with a transposition." << endl;
+	outfile << "There were " << del << " words with a deletion within." << endl;
+	outfile << "There were " << ins << " words with an insertion within." << endl;
+	outfile << "There were " << error << " words that were just plain wrong." << endl;
 }
 
 
@@ -87,7 +127,7 @@ void main()
 	string correctWord = "", badWord = "";
 	char ch = ' ';
 	int substitution = 0, transposition = 0, deletion = 0,
-		insertion = 0, correct = 0, plainWrong = 0; 
+		insertion = 0, correct = 0, plainWrong = 0;
 
 	// Create files
 	ofstream fout("spellCorrect.txt");
@@ -98,28 +138,30 @@ void main()
 		system("pause");
 		exit(0);
 	}
-	
+
+	//***********************************************************************************
 	// Start of program
 	fout << "Spelling Correction by Jacob Byrd." << endl;
-	
-	while(!fin.eof())
+	while (!fin.eof())
 	{
-		// Reads the correct word (first one in list)
+		// Reads the correct word (first one in list) then echos it.
 		fin >> correctWord;
 		fin.get(ch);
-		
-		// Echos the correct word being checked.
+
 		fout << "\n*** Starting new line ***" << endl;
-		fout << "User word is " << correctWord << endl; 
-		
+		fout << "The word being checked is " << correctWord << endl;
+
 		// while the char getting read isn't a new line, keep on reading the incorrect words and checking them.
 		while (ch != '\n' && !fin.eof())
 		{
+			// Read and echo bad word.
 			fin >> badWord;
-			fout << badWord << endl;
+			fout << endl;
+			fout << "User's word is " << badWord << endl;
+
 			if (correctWord == badWord)
 			{
-
+				fout << "User's word is correct!" << endl;
 				correct++;
 			}
 
@@ -134,18 +176,17 @@ void main()
 				}
 
 				// Check for Transposition
-				if (checkTrans(correctWord,badWord) == TRANS)
+				else if (checkTrans(correctWord, badWord) == TRANS)
 				{
 					fout << "The user's word contains a transposition\n" << endl;
 					transposition++;
 				}
 
-
 				else
 				{
+					fout << "Word has too many errors.\n" << endl;
 					plainWrong++;
 				}
-
 
 
 			}
@@ -159,36 +200,42 @@ void main()
 					fout << "The user's word has had a character deleted\n" << endl;
 					deletion++;
 				}
+
+				else if (checkDeletion(correctWord, badWord) == ERR)
+				{
+					fout << "The user's word is just plain wrong.\n" << endl;
+					plainWrong++;
+				}
 			}
 
 			else if (correctWord.size() + 1 == badWord.size())
 			{
-
+				errorType ins = checkInsertion(correctWord, badWord);
 				// Check for insertion
-				if (checkInsertion(correctWord, badWord) == INS)
+				if (ins == INS)
 				{
-					fout << "The user's word has had a character inserted\n" << endl; 
+					fout << "The user's word has had a character inserted\n" << endl;
 					insertion++;
+				}
+
+				else if (ins == ERR)
+				{
+					fout << "Word has too many errors.\n" << endl;
+					plainWrong++;
 				}
 
 			}
 
-			else
-			{
-				plainWrong++;
-				fout << "User's word is just plain wrong.\n" << endl;
-			}
-
-			
-			
 			fin.get(ch);
+
+		// End of while(ch != '\n')
 		}
-		
+
+	// end of while (!fin.eof())
 	}
 
+	displayResults(substitution, transposition, deletion, insertion, plainWrong, correct, fout);
 
-	
-
-	fout << transposition << ' ' << deletion << ' ' << substitution << ' ' << ' ' << insertion << ' ' << plainWrong <<  endl;
 	system("pause");
+// End of program
 }
