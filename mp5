@@ -1,0 +1,194 @@
+#include <iostream>
+#include <string>
+#include <iomanip>
+#include <fstream>
+using namespace std;
+
+enum errorType{CORRECT,SUB,TRANS,DEL,INS,ERR};
+
+int checkError(string word1, string word2)
+{
+	int i = 0;
+		for (i = 0; i < word1.size(); i++)
+			if (word1[i] != word2[i])
+				break;
+	return i;
+}
+
+errorType checkSubs(string cw, string bw)
+{
+	int i = 0;
+	i = checkError(cw, bw);
+	if (cw.substr(i+1) == bw.substr(i+1))
+		return SUB;
+	return ERR;
+}
+
+errorType checkTrans(string cw, string bw)
+{
+	int i = 0;
+	// Set i == the position of the first char that's different.
+	i = checkError (cw,bw);
+
+	// Check to see if i is == the last letter of the word.
+	if (i == cw.size() - 1)
+		return ERR;
+
+	// Check to see if i is == the second to last letter of the word.
+	if (cw[i] == bw[i+1] && cw[i+1] == bw[i] && i == cw.size() - 2)
+		return TRANS;
+
+	if (cw[i] == bw[i+1]	
+		&& cw[i+1] == bw[i] 
+		&& cw.substr(i+2) == bw.substr(i+2))
+			return TRANS;
+
+	return ERR;
+
+}
+
+errorType checkDeletion(string cw, string bw)
+{
+	int i = 0;
+
+	i = checkError(bw,cw);	// bad word is first because it's shorter
+
+	if (i == bw.size())
+		return DEL;
+
+	if (cw.substr(i+1) == bw.substr(i))
+		return DEL;
+
+	return ERR;
+}
+
+errorType checkInsertion(string cw, string bw)
+{
+	int i = 0;
+
+	i = checkError(cw, bw);
+
+
+
+	if (cw[i] != bw[i])
+		if (cw[cw.size() + 1] == bw[bw.size()])
+			return INS;
+
+	//else if (cw.size() + 1 == bw.size())
+		//return INS;
+
+	return ERR;
+}
+
+
+void main()
+{
+	// Declare variables
+	string correctWord = "", badWord = "";
+	char ch = ' ';
+	int substitution = 0, transposition = 0, deletion = 0,
+		insertion = 0, correct = 0, plainWrong = 0; 
+
+	// Create files
+	ofstream fout("spellCorrect.txt");
+	ifstream fin("word.txt");
+	if (!fin)
+	{
+		cout << "file not found!" << endl;
+		system("pause");
+		exit(0);
+	}
+	
+	// Start of program
+	fout << "Spelling Correction by Jacob Byrd." << endl;
+	
+	while(!fin.eof())
+	{
+		// Reads the correct word (first one in list)
+		fin >> correctWord;
+		fin.get(ch);
+		
+		// Echos the correct word being checked.
+		fout << "\n*** Starting new line ***" << endl;
+		fout << "User word is " << correctWord << endl; 
+		
+		// while the char getting read isn't a new line, keep on reading the incorrect words and checking them.
+		while (ch != '\n' && !fin.eof())
+		{
+			fin >> badWord;
+			fout << badWord << endl;
+			if (correctWord == badWord)
+			{
+
+				correct++;
+			}
+
+			else if (correctWord.size() == badWord.size())
+			{
+
+				// Check for substitution
+				if (checkSubs(correctWord, badWord) == SUB)
+				{
+					fout << "The user's word has one character substituted\n" << endl;
+					substitution++;
+				}
+
+				// Check for Transposition
+				if (checkTrans(correctWord,badWord) == TRANS)
+				{
+					fout << "The user's word contains a transposition\n" << endl;
+					transposition++;
+				}
+
+
+				else
+				{
+					plainWrong++;
+				}
+
+
+
+			}
+
+			else if (correctWord.size() == badWord.size() + 1)
+			{
+
+				// Check for deletion
+				if (checkDeletion(correctWord, badWord) == DEL)
+				{
+					fout << "The user's word has had a character deleted\n" << endl;
+					deletion++;
+				}
+			}
+
+			else if (correctWord.size() + 1 == badWord.size())
+			{
+
+				// Check for insertion
+				if (checkInsertion(correctWord, badWord) == INS)
+				{
+					fout << "The user's word has had a character inserted\n" << endl; 
+					insertion++;
+				}
+
+			}
+
+			else
+			{
+				plainWrong++;
+				fout << "User's word is just plain wrong.\n" << endl;
+			}
+
+			
+			
+			fin.get(ch);
+		}
+		
+	}
+
+
+	
+
+	fout << transposition << ' ' << deletion << ' ' << substitution << ' ' << ' ' << insertion << ' ' << plainWrong <<  endl;
+	system("pause");
+}
