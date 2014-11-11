@@ -1,0 +1,85 @@
+#include <iostream>
+#include <fstream>
+using namespace std;
+
+const int ROWS = 3;
+const int COLS = 3;
+
+void fillArray(ifstream& fin, int arr[][COLS], int rs, int cs)
+{
+	int r = 0, c = 0;
+
+	for (r = 0; r < rs; r++)
+		for (c = 0; c < cs; c++)
+			fin >> arr[r][c];
+}
+void displayArray(int arr[][COLS], int rs, int cs)
+{
+	int r = 0, c = 0;
+
+	for (r = 0; r < rs; r++)
+	{
+		for (c = 0; c < cs; c++)
+		{
+			cout << arr[r][c] << "\t";
+		}
+		// ends line at end of line in txt file.	
+		cout << endl;		
+	}
+}
+
+int addAColumn(int arr[][COLS], int rs, int column)
+{
+	int sum = 0, r = 0;
+
+	for (r = 0; r < rs; r++)
+		sum = sum + arr[r][column];
+	
+	return sum;
+}
+
+int addARow(int arr[][COLS], int row, int cs)
+{
+	int sum = 0, c = 0;
+
+	for (c = 0; c < cs; c++)
+		sum = sum + arr[row][c];
+	
+	return sum;
+}
+
+// add top right to bottom left diagonally
+int addDiag(int arr[][COLS], int rs, int c)
+{
+	int total = 0, r = 0;
+
+    for (r = 0; r < rs; r++)
+        total += arr[r][--c];
+	
+
+    return total;
+}
+
+
+
+void main()
+{
+	int grades[ROWS][COLS] = {};
+	int total = 0;
+	ifstream fin("myGrades.txt");
+	
+	fillArray(fin, grades, ROWS, COLS);
+	displayArray(grades, ROWS, COLS);
+
+	total = addAColumn(grades, ROWS, 0);
+	cout << "The total of column 0 is " << total << endl;
+
+
+	total = addARow(grades, 1, COLS);
+	cout << "The total of row 1 is " << total << endl;
+
+	total = addDiag(grades, ROWS, COLS);
+	cout << "The total of row 1 is " << total << endl;
+
+	system("pause");
+}
