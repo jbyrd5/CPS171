@@ -1,0 +1,95 @@
+// Sorting and searching through arrays, 11-11
+
+#include <iostream>
+using namespace std;
+
+// display array
+void displayArray(const int arr[], int sz)
+{
+	for (int i = 0; i < sz; i++)
+	{
+		cout << arr[i] << '\t';
+	}
+	cout << endl;
+
+}
+
+
+
+// sorting
+void selectionSort(int arr[], int sz)
+{
+	int i = 0, j = 0;
+	int smallest = 0;
+
+	for (i = 0; i < sz - 1; i++)
+	{
+		// assume smallest is i
+		smallest = i;
+
+		for (j = i + 1; j < sz; j++)
+		{
+			// if j (which is i + 1) is less than i, set smallest to j and swap them to put them in order.
+			if (arr[j] < arr[smallest])
+				smallest = j;
+		}
+		swap(arr[smallest], arr[i]);
+	}
+}
+
+
+// searching using binary search (splitting things in 2)
+// note the type of the item you are looking for and the type of the array.
+// USE TEMPLATE IN HW.
+int binarySearch(int arr[], int sz, int item)
+{
+	int first = 0, last = sz - 1, mid;
+
+	while (first <= last)
+	{
+		mid = (first + last) / 2;
+		if (item == arr[mid])
+			return mid;
+		else if (item < arr[mid])
+			last = mid - 1;
+		else 
+			first = mid + 1;
+	}
+	return -1;
+}
+
+
+
+void main()
+{
+	int numbers[7] = {17,3,2,12,11,8,13};
+	int loc = 0;
+	// before sorting
+	cout << "Array before sorting" << endl;
+	displayArray(numbers, 7);
+	
+	// sorting
+	selectionSort(numbers, 7);
+
+	// after sorting
+	cout << "Array after sorting" << endl;
+	displayArray(numbers, 7);
+
+	// searching for a number in the array
+	cout << "Looking for 8" << endl;
+	loc = binarySearch(numbers, 7, 8);
+	if (loc == -1)
+		cout << "Not found" << endl;
+	else
+		cout << "found at location " << loc << endl;
+
+	// searching for a number not in the array
+	cout << "Looking for 16" << endl;
+	loc = binarySearch(numbers, 7, 16);
+	if (loc == -1)
+		cout << "Not found" << endl;
+	else
+		cout << "found at location " << loc << endl;
+
+	system("pause");
+}
